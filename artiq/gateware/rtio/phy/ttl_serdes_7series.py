@@ -91,6 +91,9 @@ class InOut_8X(ttl_serdes_generic.InOut):
         serdes = _IOSERDESE2_8X()
         self.submodules += serdes
         ttl_serdes_generic.InOut.__init__(self, serdes)
+        # Expose the input-buffer output for peripherals which need to use a
+        # DIO signal directly, before the rio_phy ISERDES.
+        self.input_raw = serdes.ser_in
 
         if pad_n is None:
             self.specials += Instance("IOBUF",

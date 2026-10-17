@@ -3,7 +3,8 @@ from migen.build.generic_platform import *
 from migen.genlib.io import DifferentialOutput
 
 from artiq.gateware import rtio
-from artiq.gateware.rtio.phy import spi2, ad53xx_monitor, dds, grabber
+from artiq.gateware.rtio.phy import (
+    spi2, spi_slave, ad53xx_monitor, dds, grabber)
 from artiq.gateware.suservo import servo, pads as servo_pads
 from artiq.gateware.rtio.phy import servo as rtservo, fastino, phaser
 
@@ -47,7 +48,7 @@ class DIO(_EEM):
 
     @classmethod
     def add_std(cls, target, eem, ttl03_cls, ttl47_cls, iostandard=default_iostandard,
-            edge_counter_cls=None):
+            edge_counter_cls=None, spi_slave_data=None):
         cls.add_extension(target, eem, iostandard=iostandard)
 
         phys = []
@@ -72,6 +73,18 @@ class DIO(_EEM):
                     counter = edge_counter_cls(state)
                     target.submodules += counter
                     target.rtio_channels.append(rtio.Channel.from_phy(counter))
+
+        if spi_slave_data is not None:
+            receiver = spi_slave.ClockedSPISlave(
+                phys[0].input_raw, phys[spi_slave_data].input_raw)
+            target.submodules += receiver
+            target.rtio_channels.append(rtio.Channel.from_phy(receiver))
+            target.platform.add_period_constraint(
+                receiver.cd_spi_slave.clk, 40.0)
+            target.platform.add_false_path_constraints(
+                receiver.cd_spi_slave.clk, target.crg.cd_sys.clk)
+            target.platform.add_false_path_constraints(
+                receiver.cd_spi_slave.clk, target.crg.cd_sys4x.clk)
 
 
 class DIO_SPI(_EEM):

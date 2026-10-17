@@ -52,6 +52,12 @@ Digital I/O drivers
 .. automodule:: artiq.coredevice.spi2
     :members:
 
+:mod:`artiq.coredevice.spi_slave` module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: artiq.coredevice.spi_slave
+    :members:
+
 :mod:`artiq.coredevice.i2c` module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

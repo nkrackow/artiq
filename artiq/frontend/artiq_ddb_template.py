@@ -165,6 +165,17 @@ class PeripheralManager:
                         }}""",
                              name=name[i],
                              channel=rtio_offset + next(channel))
+        if "spi_slave" in peripheral:
+            spi_slave = peripheral["spi_slave"]
+            self.gen("""
+                device_db["{name}"] = {{
+                    "type": "local",
+                    "module": "artiq.coredevice.spi_slave",
+                    "class": "SPISlave",
+                    "arguments": {{"channel": 0x{channel:06x}}},
+                }}""",
+                     name=self.get_name(spi_slave.get("name", "spi_slave")),
+                     channel=rtio_offset + next(channel))
         return next(channel)
 
     def process_dio_spi(self, rtio_offset, peripheral):

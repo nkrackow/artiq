@@ -180,6 +180,21 @@
                             "type": "boolean",
                             "default": false
                         },
+                        "spi_slave": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "default": "spi_slave"
+                                },
+                                "data": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 7
+                                }
+                            },
+                            "required": ["data"]
+                        },
                         "bank_direction_low": {
                             "type": "string",
                             "enum": ["input", "output", "clkgen"]
