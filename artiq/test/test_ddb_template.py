@@ -33,6 +33,9 @@ class TestSPIReceiverDDB(unittest.TestCase):
     def test_schema_and_device_db(self):
         description = self.description()
         jsondesc.validator.validate(description)
+        receiver = description["peripherals"][0]["spi_receiver"]
+        self.assertEqual(receiver["clock_polarity"], 0)
+        self.assertEqual(receiver["bit_order"], "msb_first")
 
         output = io.StringIO()
         manager = PeripheralManager(output, description)
@@ -47,6 +50,19 @@ class TestSPIReceiverDDB(unittest.TestCase):
     def test_clock_channel_cannot_be_selected_as_data(self):
         description = self.description()
         description["peripherals"][0]["spi_receiver"]["data"] = 0
+        with self.assertRaises(ValidationError):
+            jsondesc.validator.validate(description)
+
+    def test_invalid_spi_format(self):
+        description = self.description()
+        receiver = description["peripherals"][0]["spi_receiver"]
+        receiver["clock_polarity"] = 2
+        with self.assertRaises(ValidationError):
+            jsondesc.validator.validate(description)
+
+        description = self.description()
+        receiver = description["peripherals"][0]["spi_receiver"]
+        receiver["bit_order"] = "sideways"
         with self.assertRaises(ValidationError):
             jsondesc.validator.validate(description)
 

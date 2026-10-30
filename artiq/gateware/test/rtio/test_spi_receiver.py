@@ -1,13 +1,15 @@
 import unittest
 
 from migen import *
+from migen.fhdl import verilog
 from migen.sim import passive
 
-from artiq.gateware.rtio.phy.spi_receiver import SPIReceiver
+from artiq.gateware.rtio.phy.spi_receiver import (
+    ClockedSPIReceiver, SPIReceiver)
 
 
 class Testbench(Module):
-    def __init__(self):
+    def __init__(self, lsb_first=False):
         self.clock_domains.cd_write = ClockDomain()
         self.clock_domains.cd_read = ClockDomain()
 
@@ -16,12 +18,13 @@ class Testbench(Module):
         self.submodules.dut = ClockDomainsRenamer({
             "write": "write",
             "read": "read"
-        })(SPIReceiver(self.data, reset=self.reset))
+        })(SPIReceiver(
+            self.data, reset=self.reset, lsb_first=lsb_first))
 
-    def enable_with_first_bit(self, value):
+    def enable_with_first_bit(self, value, bit=31):
         # The serial clock is free-running in this simulation. Present the
         # first bit before arming so the next write-domain edge is edge 1.
-        yield self.data.eq((value >> 31) & 1)
+        yield self.data.eq((value >> bit) & 1)
         yield self.dut.rtlink.o.data.eq(1)
         yield self.dut.rtlink.o.stb.eq(1)
         yield
@@ -40,15 +43,15 @@ class Testbench(Module):
         yield self.reset.eq(0)
         yield
 
-    def send_bits(self, value, first_bit=31, count=32):
-        for bit in range(first_bit, first_bit - count, -1):
+    def send_bits(self, value, first_bit=31, count=32, step=-1):
+        for bit in range(first_bit, first_bit + step*count, step):
             yield self.data.eq((value >> bit) & 1)
             yield
 
 
 class TestSPIReceiver(unittest.TestCase):
-    def run_test(self, stimulus, expected):
-        tb = Testbench()
+    def run_test(self, stimulus, expected, lsb_first=False):
+        tb = Testbench(lsb_first=lsb_first)
         received = []
 
         @passive
@@ -76,6 +79,27 @@ class TestSPIReceiver(unittest.TestCase):
                 yield
 
         self.run_test(stimulus, [0xa5c39e71])
+
+    def test_lsb_first(self):
+        def stimulus(tb):
+            yield from tb.enable_with_first_bit(0xa5c39e71, bit=0)
+            yield from tb.send_bits(
+                0xa5c39e71, first_bit=1, count=31, step=1)
+            for _ in range(8):
+                yield
+
+        self.run_test(stimulus, [0xa5c39e71], lsb_first=True)
+
+    def test_inverted_clock(self):
+        top = Module()
+        top.clock_domains.cd_rio = ClockDomain()
+        clock = Signal()
+        data = Signal()
+        top.submodules.receiver = ClockedSPIReceiver(
+            clock, data, clock_polarity=1)
+        generated = str(verilog.convert(top, ios={clock, data}))
+        print(generated)
+        self.assertIn(".IS_I_INVERTED(1'd1)", generated)
 
     def test_two_back_to_back_words(self):
         def stimulus(tb):

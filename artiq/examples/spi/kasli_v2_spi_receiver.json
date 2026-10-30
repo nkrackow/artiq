@@ -13,7 +13,9 @@
             "edge_counter": false,
             "spi_receiver": {
                 "name": "spi_receiver",
-                "data": 1
+                "data": 1,
+                "clock_polarity": 0,
+                "bit_order": "msb_first"
             }
         }
     ]

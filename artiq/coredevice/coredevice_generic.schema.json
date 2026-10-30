@@ -191,6 +191,16 @@
                                     "type": "integer",
                                     "minimum": 1,
                                     "maximum": 7
+                                },
+                                "clock_polarity": {
+                                    "type": "integer",
+                                    "enum": [0, 1],
+                                    "default": 0
+                                },
+                                "bit_order": {
+                                    "type": "string",
+                                    "enum": ["msb_first", "lsb_first"],
+                                    "default": "msb_first"
                                 }
                             },
                             "required": ["data"]

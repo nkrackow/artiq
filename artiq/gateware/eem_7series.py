@@ -16,8 +16,13 @@ def peripheral_dio(module, peripheral, **kwargs):
         edge_counter_cls = None
 
     spi_receiver_data = None
+    spi_receiver_clock_polarity = 0
+    spi_receiver_lsb_first = False
     if "spi_receiver" in peripheral:
-        spi_receiver_data = peripheral["spi_receiver"]["data"]
+        receiver = peripheral["spi_receiver"]
+        spi_receiver_data = receiver["data"]
+        spi_receiver_clock_polarity = receiver["clock_polarity"]
+        spi_receiver_lsb_first = receiver["bit_order"] == "lsb_first"
         if peripheral["bank_direction_low"] != "input":
             raise ValueError(
                 "SPI receiver clock on DIO channel 0 requires the low bank "
@@ -33,7 +38,10 @@ def peripheral_dio(module, peripheral, **kwargs):
         ttl_classes[peripheral["bank_direction_low"]],
         ttl_classes[peripheral["bank_direction_high"]],
         edge_counter_cls=edge_counter_cls,
-        spi_receiver_data=spi_receiver_data, **kwargs)
+        spi_receiver_data=spi_receiver_data,
+        spi_receiver_clock_polarity=spi_receiver_clock_polarity,
+        spi_receiver_lsb_first=spi_receiver_lsb_first,
+        **kwargs)
 
 
 def peripheral_dio_spi(module, peripheral, **kwargs):

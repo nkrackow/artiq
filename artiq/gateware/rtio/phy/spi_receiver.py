@@ -7,17 +7,27 @@ from artiq.gateware.rtio import rtlink
 class ClockedSPIReceiver(Module):
     """Kasli/EEM wrapper providing the external and RTIO-side clock domains."""
 
-    def __init__(self, clock, data):
+    def __init__(self, clock, data, clock_polarity=0, lsb_first=False):
+        if clock_polarity not in (0, 1):
+            raise ValueError("clock_polarity must be 0 or 1")
+
         self.clock_domains.cd_spi_receiver = ClockDomain(reset_less=True)
         self.clock_domains.cd_spi_receiver_rio = ClockDomain(reset_less=True)
         self.specials += Instance(
-            "BUFG", i_I=clock, o_O=self.cd_spi_receiver.clk)
+            "BUFGCE",
+            p_CE_TYPE="SYNC",
+            p_IS_I_INVERTED=clock_polarity,
+            p_SIM_DEVICE="7SERIES",
+            i_CE=1,
+            i_I=clock,
+            o_O=self.cd_spi_receiver.clk)
         self.comb += self.cd_spi_receiver_rio.clk.eq(ClockSignal("rio"))
 
         core = ClockDomainsRenamer({
             "write": "spi_receiver",
             "read": "spi_receiver_rio"
-        })(SPIReceiver(data, reset=ResetSignal("rio")))
+        })(SPIReceiver(
+            data, reset=ResetSignal("rio"), lsb_first=lsb_first))
         self.submodules.core = core
         self.rtlink = core.rtlink
 
@@ -26,9 +36,9 @@ class SPIReceiver(Module):
     """Minimal receive-only SPI receiver.
 
     The external interface consists of a clock for the ``write`` domain and
-    the scalar ``data`` input. Data is sampled MSB-first on rising clock edges.
-    Every 32 samples form one RTIO input event. Completed words cross into the
-    ``read`` domain through a two-entry asynchronous FIFO.
+    the scalar ``data`` input. Every 32 samples form one RTIO input event.
+    Completed words cross into the ``read`` domain through a two-entry
+    asynchronous FIFO.
 
     RTIO output data bit 0 enables reception. Disabling ignores clock edges;
     every transition from disabled to enabled starts a new word. The enable
@@ -40,9 +50,11 @@ class SPIReceiver(Module):
 
     :param data: Serial data input.
     :param reset: Synchronous reset indication in the read clock domain.
+    :param lsb_first: If true, the first sampled bit becomes bit 0 rather than
+        bit 31.
     """
 
-    def __init__(self, data, reset=0):
+    def __init__(self, data, reset=0, lsb_first=False):
         self.rtlink = rtlink.Interface(
             rtlink.OInterface(1, enable_replace=False),
             rtlink.IInterface(32))
@@ -76,7 +88,10 @@ class SPIReceiver(Module):
         bit_count = Signal(5)
         seen_generation = Signal.like(arm_generation)
         next_word = Signal(32)
-        self.comb += next_word.eq(Cat(data, shift_register[:31]))
+        if lsb_first:
+            self.comb += next_word.eq(Cat(shift_register[1:], data))
+        else:
+            self.comb += next_word.eq(Cat(data, shift_register[:31]))
 
         write_word = Signal()
         self.comb += [
