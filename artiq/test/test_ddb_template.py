@@ -7,7 +7,7 @@ from artiq.coredevice import jsondesc
 from artiq.frontend.artiq_ddb_template import PeripheralManager
 
 
-class TestSPISlaveDDB(unittest.TestCase):
+class TestSPIReceiverDDB(unittest.TestCase):
     def peripheral(self):
         return {
             "type": "dio",
@@ -15,8 +15,8 @@ class TestSPISlaveDDB(unittest.TestCase):
             "bank_direction_low": "input",
             "bank_direction_high": "input",
             "edge_counter": False,
-            "spi_slave": {
-                "name": "spi_slave",
+            "spi_receiver": {
+                "name": "spi_receiver",
                 "data": 3
             }
         }
@@ -24,7 +24,7 @@ class TestSPISlaveDDB(unittest.TestCase):
     def description(self):
         return {
             "target": "kasli",
-            "variant": "spi_slave_test",
+            "variant": "spi_receiver_test",
             "hw_rev": "v2.0",
             "base": "standalone",
             "peripherals": [self.peripheral()]
@@ -40,13 +40,13 @@ class TestSPISlaveDDB(unittest.TestCase):
 
         self.assertEqual(channels, 9)
         generated = output.getvalue()
-        self.assertIn('device_db["spi_slave0"]', generated)
-        self.assertIn('"module": "artiq.coredevice.spi_slave"', generated)
+        self.assertIn('device_db["spi_receiver0"]', generated)
+        self.assertIn('"module": "artiq.coredevice.spi_receiver"', generated)
         self.assertIn('"channel": 0x000028', generated)
 
     def test_clock_channel_cannot_be_selected_as_data(self):
         description = self.description()
-        description["peripherals"][0]["spi_slave"]["data"] = 0
+        description["peripherals"][0]["spi_receiver"]["data"] = 0
         with self.assertRaises(ValidationError):
             jsondesc.validator.validate(description)
 

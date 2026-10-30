@@ -180,12 +180,12 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "spi_slave": {
+                        "spi_receiver": {
                             "type": "object",
                             "properties": {
                                 "name": {
                                     "type": "string",
-                                    "default": "spi_slave"
+                                    "default": "spi_receiver"
                                 },
                                 "data": {
                                     "type": "integer",

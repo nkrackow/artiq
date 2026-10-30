@@ -1,7 +1,7 @@
 {
-    "_description": "Kasli v2 standalone demo with a DIO SPI slave",
+    "_description": "Kasli v2 standalone demo with a DIO SPI receiver",
     "target": "kasli",
-    "variant": "spi_slave_demo",
+    "variant": "spi_receiver_demo",
     "hw_rev": "v2.0",
     "base": "standalone",
     "peripherals": [
@@ -11,8 +11,8 @@
             "bank_direction_low": "input",
             "bank_direction_high": "input",
             "edge_counter": false,
-            "spi_slave": {
-                "name": "spi_slave",
+            "spi_receiver": {
+                "name": "spi_receiver",
                 "data": 1
             }
         }

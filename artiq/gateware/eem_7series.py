@@ -15,25 +15,25 @@ def peripheral_dio(module, peripheral, **kwargs):
     else:
         edge_counter_cls = None
 
-    spi_slave_data = None
-    if "spi_slave" in peripheral:
-        spi_slave_data = peripheral["spi_slave"]["data"]
+    spi_receiver_data = None
+    if "spi_receiver" in peripheral:
+        spi_receiver_data = peripheral["spi_receiver"]["data"]
         if peripheral["bank_direction_low"] != "input":
             raise ValueError(
-                "SPI slave clock on DIO channel 0 requires the low bank "
+                "SPI receiver clock on DIO channel 0 requires the low bank "
                 "to be configured as input")
-        data_bank = "bank_direction_low" if spi_slave_data < 4 \
+        data_bank = "bank_direction_low" if spi_receiver_data < 4 \
             else "bank_direction_high"
         if peripheral[data_bank] != "input":
             raise ValueError(
-                "SPI slave data channel {} requires its DIO bank to be "
-                "configured as input".format(spi_slave_data))
+                "SPI receiver data channel {} requires its DIO bank to be "
+                "configured as input".format(spi_receiver_data))
 
     eem.DIO.add_std(module, peripheral["ports"][0],
         ttl_classes[peripheral["bank_direction_low"]],
         ttl_classes[peripheral["bank_direction_high"]],
         edge_counter_cls=edge_counter_cls,
-        spi_slave_data=spi_slave_data, **kwargs)
+        spi_receiver_data=spi_receiver_data, **kwargs)
 
 
 def peripheral_dio_spi(module, peripheral, **kwargs):

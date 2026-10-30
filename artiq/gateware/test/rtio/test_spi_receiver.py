@@ -3,7 +3,7 @@ import unittest
 from migen import *
 from migen.sim import passive
 
-from artiq.gateware.rtio.phy.spi_slave import SPISlave
+from artiq.gateware.rtio.phy.spi_receiver import SPIReceiver
 
 
 class Testbench(Module):
@@ -16,7 +16,7 @@ class Testbench(Module):
         self.submodules.dut = ClockDomainsRenamer({
             "write": "write",
             "read": "read"
-        })(SPISlave(self.data, reset=self.reset))
+        })(SPIReceiver(self.data, reset=self.reset))
 
     def enable_with_first_bit(self, value):
         # The serial clock is free-running in this simulation. Present the
@@ -46,7 +46,7 @@ class Testbench(Module):
             yield
 
 
-class TestSPISlave(unittest.TestCase):
+class TestSPIReceiver(unittest.TestCase):
     def run_test(self, stimulus, expected):
         tb = Testbench()
         received = []

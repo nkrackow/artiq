@@ -1,4 +1,4 @@
-"""Driver for the receive-only DIO SPI slave PHY."""
+"""Driver for the receive-only DIO SPI receiver PHY."""
 
 from numpy import int64
 
@@ -8,7 +8,7 @@ from artiq.coredevice.rtio import (
     rtio_input_data, rtio_input_timestamped_data, rtio_output)
 
 
-class SPISlave:
+class SPIReceiver:
     """Receive 32-bit SPI words as RTIO input events.
 
     The gateware samples data MSB-first on rising edges of a mode-0 SPI clock.
@@ -18,7 +18,7 @@ class SPISlave:
     must allow the enable signal to settle before presenting the first clock
     edge, and must start at the first bit of a new word.
 
-    :param channel: RTIO channel assigned to the SPI slave PHY.
+    :param channel: RTIO channel assigned to the SPI receiver PHY.
     """
 
     kernel_invariants = {"core", "channel", "target"}

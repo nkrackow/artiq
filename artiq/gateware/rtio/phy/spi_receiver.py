@@ -4,26 +4,26 @@ from migen.genlib.fifo import AsyncFIFO
 from artiq.gateware.rtio import rtlink
 
 
-class ClockedSPISlave(Module):
+class ClockedSPIReceiver(Module):
     """Kasli/EEM wrapper providing the external and RTIO-side clock domains."""
 
     def __init__(self, clock, data):
-        self.clock_domains.cd_spi_slave = ClockDomain(reset_less=True)
-        self.clock_domains.cd_spi_slave_rio = ClockDomain(reset_less=True)
+        self.clock_domains.cd_spi_receiver = ClockDomain(reset_less=True)
+        self.clock_domains.cd_spi_receiver_rio = ClockDomain(reset_less=True)
         self.specials += Instance(
-            "BUFG", i_I=clock, o_O=self.cd_spi_slave.clk)
-        self.comb += self.cd_spi_slave_rio.clk.eq(ClockSignal("rio"))
+            "BUFG", i_I=clock, o_O=self.cd_spi_receiver.clk)
+        self.comb += self.cd_spi_receiver_rio.clk.eq(ClockSignal("rio"))
 
         core = ClockDomainsRenamer({
-            "write": "spi_slave",
-            "read": "spi_slave_rio"
-        })(SPISlave(data, reset=ResetSignal("rio")))
+            "write": "spi_receiver",
+            "read": "spi_receiver_rio"
+        })(SPIReceiver(data, reset=ResetSignal("rio")))
         self.submodules.core = core
         self.rtlink = core.rtlink
 
 
-class SPISlave(Module):
-    """Minimal receive-only SPI slave.
+class SPIReceiver(Module):
+    """Minimal receive-only SPI receiver.
 
     The external interface consists of a clock for the ``write`` domain and
     the scalar ``data`` input. Data is sampled MSB-first on rising clock edges.
