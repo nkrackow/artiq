@@ -11,9 +11,9 @@ from artiq.coredevice.rtio import (
 class SPIReceiver:
     """Receive 32-bit SPI words as RTIO input events.
 
-    Clock polarity and bit order are selected in the system JSON description.
-    Clock phase is fixed at zero. There is no chip-select signal; each group
-    of 32 sampling edges is one word.
+    Data is sampled on rising clock edges. Bit order is selected in the system
+    JSON description. There is no chip-select signal; each group of 32 rising
+    edges is one word.
 
     Reception is disabled after reset. After enabling, the external sender
     must allow the enable signal to settle before presenting the first clock

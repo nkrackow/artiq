@@ -49,7 +49,7 @@ class DIO(_EEM):
     @classmethod
     def add_std(cls, target, eem, ttl03_cls, ttl47_cls, iostandard=default_iostandard,
             edge_counter_cls=None, spi_receiver_data=None,
-            spi_receiver_clock_polarity=0, spi_receiver_lsb_first=False):
+            spi_receiver_lsb_first=False):
         cls.add_extension(target, eem, iostandard=iostandard)
 
         phys = []
@@ -78,7 +78,6 @@ class DIO(_EEM):
         if spi_receiver_data is not None:
             receiver = spi_receiver.ClockedSPIReceiver(
                 phys[0].input_raw, phys[spi_receiver_data].input_raw,
-                clock_polarity=spi_receiver_clock_polarity,
                 lsb_first=spi_receiver_lsb_first)
             # clock is hardcoded to channel 0 because that is intended for clocks
             target.submodules += receiver

@@ -7,20 +7,11 @@ from artiq.gateware.rtio import rtlink
 class ClockedSPIReceiver(Module):
     """Kasli/EEM wrapper providing the external and RTIO-side clock domains."""
 
-    def __init__(self, clock, data, clock_polarity=0, lsb_first=False):
-        if clock_polarity not in (0, 1):
-            raise ValueError("clock_polarity must be 0 or 1")
-
+    def __init__(self, clock, data, lsb_first=False):
         self.clock_domains.cd_spi_receiver = ClockDomain(reset_less=True)
         self.clock_domains.cd_spi_receiver_rio = ClockDomain(reset_less=True)
         self.specials += Instance(
-            "BUFGCE",
-            p_CE_TYPE="SYNC",
-            p_IS_I_INVERTED=clock_polarity,
-            p_SIM_DEVICE="7SERIES",
-            i_CE=1,
-            i_I=clock,
-            o_O=self.cd_spi_receiver.clk)
+            "BUFG", i_I=clock, o_O=self.cd_spi_receiver.clk)
         self.comb += self.cd_spi_receiver_rio.clk.eq(ClockSignal("rio"))
 
         core = ClockDomainsRenamer({

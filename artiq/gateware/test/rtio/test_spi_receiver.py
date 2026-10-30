@@ -1,11 +1,9 @@
 import unittest
 
 from migen import *
-from migen.fhdl import verilog
 from migen.sim import passive
 
-from artiq.gateware.rtio.phy.spi_receiver import (
-    ClockedSPIReceiver, SPIReceiver)
+from artiq.gateware.rtio.phy.spi_receiver import SPIReceiver
 
 
 class Testbench(Module):
@@ -89,17 +87,6 @@ class TestSPIReceiver(unittest.TestCase):
                 yield
 
         self.run_test(stimulus, [0xa5c39e71], lsb_first=True)
-
-    def test_inverted_clock(self):
-        top = Module()
-        top.clock_domains.cd_rio = ClockDomain()
-        clock = Signal()
-        data = Signal()
-        top.submodules.receiver = ClockedSPIReceiver(
-            clock, data, clock_polarity=1)
-        generated = str(verilog.convert(top, ios={clock, data}))
-        print(generated)
-        self.assertIn(".IS_I_INVERTED(1'd1)", generated)
 
     def test_two_back_to_back_words(self):
         def stimulus(tb):
